@@ -1,2 +1,11 @@
 import { readFileSync } from "fs";
-console.log(readFileSync(process.argv[2], "utf-8"));
+import * as ts from "typescript";
+
+let input = process.argv[2];
+
+const program = ts.createProgram([input], { strict: true });
+const diagnostics = ts.getPreEmitDiagnostics(program);
+
+diagnostics.forEach(d => {
+  console.log(d.messageText);
+})
