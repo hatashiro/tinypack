@@ -1,0 +1,20 @@
+{
+  "name": "tinypack",
+  "version": "0.0.0",
+  "description": "A simple TypeScript module bundler",
+  "repository": "git@github.com:utatti/tinypack.git",
+  "author": "Hyunje Jun <me@noraesae.net>",
+  "license": "MIT",
+  "main": "dist/tinypack.js",
+  "bin": {
+    "tinypack": "bin/tinypack"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@types/node": "^10.1.4",
+    "typescript": "^2.8.4"
+  }
+}

@@ -65,3 +65,6 @@ typings/
 
 # Serverless directories
 .serverless
+
+# Built files
+dist
