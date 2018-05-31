@@ -19,6 +19,12 @@ A simple TypeScript module bundler, inspired by [minipack](https://github.com/ro
 
 :construction:
 
+## References
+
+- [Minipack](https://github.com/ronami/minipack): A simplified example of a
+  modern module bundler written in JavaScript
+- [The TypeScript Compiler API](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API)
+
 ## License
 
 [MIT](LICENSE)
