@@ -13,7 +13,23 @@ A simple TypeScript module bundler, inspired by [minipack](https://github.com/ro
 
 ## Install
 
-:construction:
+### Install globally with npm
+
+```shell
+npm install -g @utatti/tinypack
+```
+
+Run with `tinypack`.
+
+### Manual install from source
+
+```shell
+git clone https://github.com/utatti/tinypack.git
+cd tinypack
+yarn # or `npm i` should work too
+```
+
+Run `bin/tinypack` in the project root.
 
 ## How to use
 
