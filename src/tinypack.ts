@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import * as ts from "typescript";
 
@@ -49,12 +49,10 @@ function compile(file: string): Module {
 
       // module specifier should be a string literal
       let moduleSpecifier = importDecl.moduleSpecifier.getText(source);
-      let depPath = JSON.parse(moduleSpecifier) as string;
+      let dep = JSON.parse(moduleSpecifier) as string;
 
-      if (depPath.startsWith(".")) {
-        if (!depPath.endsWith(".ts")) {
-          depPath += ".ts";
-        }
+      if (dep.startsWith(".")) {
+        let depPath = dep.endsWith(".ts") ? dep : dep + ".ts";
         let depAbsPath = resolve(dirname(file), depPath);
         let depID = fileModuleIdMap.get(depAbsPath);
         if (depID === undefined) {
@@ -62,9 +60,7 @@ function compile(file: string): Module {
           fileModuleIdMap.set(depAbsPath, depID);
           files.push(depAbsPath);
         }
-        deps.set(depPath, depID);
-      } else {
-        // FIXME: Node.js module resolution
+        deps.set(dep, depID);
       }
     }
   });
@@ -88,5 +84,45 @@ while (file = files.shift()) {
   modules.push(compile(file));
 }
 
-// FIXME: code generation for modules
-console.log(modules);
+function* generate(modules: Array<Module>): Iterable<string> {
+  yield ";(function (modules) {";
+
+  yield `
+var executedModules = {};
+(function executeModule(id) {
+  if (executedModules[id]) return executedModules[id];
+
+  var mod = modules[id];
+  var localRequire = function (path) {
+    return executeModule(mod[1][path]);
+  };
+  var module = { exports: {} };
+  executedModules[id] = module.exports;
+  mod[0](localRequire, module, module.exports);
+  return module.exports;
+})(0);
+`;
+
+  yield "})({";
+
+  for (let mod of modules) {
+    yield `${mod.id}: [`;
+    yield `function (require, module, exports) {`;
+    yield mod.transpiled;
+    yield "}, {";
+    for (let [key, val] of mod.deps) {
+      yield `${JSON.stringify(key)}: ${val},`
+    }
+    yield "}"
+    yield "],";
+  }
+
+  yield "})";
+}
+
+let result: string = "";
+for (let code of generate(modules)) {
+  result += code + "\n";
+}
+
+console.log(result);
