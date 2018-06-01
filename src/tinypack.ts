@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import * as ts from "typescript";
 
 function error(msg: string) {
@@ -37,13 +37,48 @@ let fileModuleIdMap = new Map([[entryFile, moduleID]]);
 let files = [entryFile];
 
 function compile(file: string): Module {
-  // FIXME
-  // 1. Traverse `import` and create `deps`
-  // 2. Get the absolute path of the import target
-  // 3. If it's already in fileModuleIdMap, use the module ID.
-  // 4. If not, fileModuleIdMap.set(path, ++moduleID) and files.push(path)
-  // 5. Create a Module object and return
-  return {} as any;
+  let id = fileModuleIdMap.get(file)!;
+  let deps = new Map<string, number>();
+
+  let content = readFileSync(file, "utf-8");
+  let source = ts.createSourceFile(file, content, ts.ScriptTarget.ES2015);
+
+  source.forEachChild(node => {
+    if (node.kind === ts.SyntaxKind.ImportDeclaration) {
+      let importDecl = node as ts.ImportDeclaration;
+
+      // module specifier should be a string literal
+      let moduleSpecifier = importDecl.moduleSpecifier.getText(source);
+      let depPath = JSON.parse(moduleSpecifier) as string;
+
+      if (depPath.startsWith(".")) {
+        if (!depPath.endsWith(".ts")) {
+          depPath += ".ts";
+        }
+        let depAbsPath = resolve(dirname(file), depPath);
+        let depID = fileModuleIdMap.get(depAbsPath);
+        if (depID === undefined) {
+          depID = ++moduleID;
+          fileModuleIdMap.set(depAbsPath, depID);
+          files.push(depAbsPath);
+        }
+        deps.set(depPath, depID);
+      } else {
+        // FIXME: Node.js module resolution
+      }
+    }
+  });
+
+  let transpiled = ts.transpileModule(content, {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES5,
+      module: ts.ModuleKind.CommonJS,
+      noImplicitUseStrict: true,
+      pretty: true
+    }
+  }).outputText;
+
+  return { id, file, deps, transpiled };
 }
 
 let modules: Array<Module> = [];
@@ -54,3 +89,4 @@ while (file = files.shift()) {
 }
 
 // FIXME: code generation for modules
+console.log(modules);
