@@ -8,9 +8,11 @@ function error(msg: string) {
 }
 
 let input = process.argv[2];
-
 if (!input) error("No input is provided.");
 
+/*
+ * STEP 1: Type check
+ */
 let diagnostics = ts.getPreEmitDiagnostics(
   ts.createProgram([input], {
     strict: true,
@@ -23,6 +25,9 @@ if (diagnostics.length) {
   error("Errors.");
 }
 
+/*
+ * STEP 2: Compile modules
+ */
 type Module = {
   id: number;
   file: string;
@@ -84,6 +89,9 @@ while (file = files.shift()) {
   modules.push(compile(file));
 }
 
+/*
+ * STEP 3: Code generation
+ */
 function* generate(modules: Array<Module>): Iterable<string> {
   yield ";(function (modules) {";
 
