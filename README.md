@@ -4,12 +4,11 @@ A simple TypeScript module bundler, inspired by [minipack](https://github.com/ro
 
 ## Features
 
-- [ ] Minimal dependency (only [the TypeScript Compiler API](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API))
-- [ ] Type check
-- [ ] Bundle TypeScript modules (only ECMAScript Modules)
-- [ ] Remove duplication for the same module
-- [ ] Node.js module resolution
-- [ ] Resolve circular dependency
+- [x] Minimal dependency (only [the TypeScript Compiler API](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API))
+- [x] Type check
+- [x] Bundle TypeScript modules (only ECMAScript Modules)
+- [x] Remove duplication for the same module
+- [x] Resolve circular dependency
 
 ## Install
 
@@ -33,7 +32,20 @@ Run `bin/tinypack` in the project root.
 
 ## How to use
 
-:construction:
+```shell
+tinypack path/to/entry.ts
+```
+
+### Play with [examples](examples)
+
+```shell
+tinypack examples/01-simple/index.ts # stdout
+tinypack examples/01-simple/index.ts | node # run
+```
+
+## How does it work?
+
+Use [the code](src/tinypack.ts), Luke!
 
 ## References
 
