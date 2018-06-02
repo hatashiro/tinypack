@@ -1,8 +1,13 @@
-import { readFileSync, writeFileSync } from "fs";
+import {
+  readFileSync as readFile,
+  writeFileSync as writeFile,
+  statSync as stat,
+  existsSync as exists
+} from "fs";
 import { resolve, dirname } from "path";
 import * as ts from "typescript";
 
-function error(msg: string) {
+function error(msg: string): any {
   console.error(msg);
   process.exit(1);
 }
@@ -10,13 +15,27 @@ function error(msg: string) {
 let input = process.argv[2];
 if (!input) error("No input is provided.");
 
+let isFile = (path: string) => exists(path) && stat(path).isFile();
+let isDir = (path: string) => exists(path) && stat(path).isDirectory();
+function modulePath(path: string, from?: string): string {
+  let absPath = from ? resolve(dirname(from), path) : resolve(path);
+  let tsPath = absPath.endsWith(".ts") ? absPath : absPath + ".ts";
+  let indexPath = resolve(absPath, "index.ts");
+  return isFile(tsPath) ? tsPath :
+         isDir(absPath) && isFile(indexPath) ? indexPath :
+         error(`Cannot find module '${path}'.`);
+}
+
+let entryFile = modulePath(input);
+
 /*
  * STEP 1: Type check
  */
 let diagnostics = ts.getPreEmitDiagnostics(
-  ts.createProgram([input], {
+  ts.createProgram([entryFile], {
     strict: true,
-    target: ts.ScriptTarget.Latest
+    target: ts.ScriptTarget.Latest,
+    moduleResolution: ts.ModuleResolutionKind.NodeJs
   })
 );
 
@@ -35,7 +54,6 @@ type Module = {
   transpiled: string;
 }
 
-let entryFile = resolve(input);
 let moduleID = 0;
 let fileModuleIdMap = new Map([[entryFile, moduleID]]);
 
@@ -45,7 +63,7 @@ function compile(file: string): Module {
   let id = fileModuleIdMap.get(file)!;
   let deps = new Map<string, number>();
 
-  let content = readFileSync(file, "utf-8");
+  let content = readFile(file, "utf-8");
   let source = ts.createSourceFile(file, content, ts.ScriptTarget.ES2015);
 
   source.forEachChild(node => {
@@ -57,13 +75,12 @@ function compile(file: string): Module {
       let dep = JSON.parse(moduleSpecifier) as string;
 
       if (dep.startsWith(".")) {
-        let depPath = dep.endsWith(".ts") ? dep : dep + ".ts";
-        let depAbsPath = resolve(dirname(file), depPath);
-        let depID = fileModuleIdMap.get(depAbsPath);
+        let depPath = modulePath(dep, file);
+        let depID = fileModuleIdMap.get(depPath);
         if (depID === undefined) {
           depID = ++moduleID;
-          fileModuleIdMap.set(depAbsPath, depID);
-          files.push(depAbsPath);
+          fileModuleIdMap.set(depPath, depID);
+          files.push(depPath);
         }
         deps.set(dep, depID);
       }
