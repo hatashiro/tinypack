@@ -1,4 +1,4 @@
-import "./subpath/module";
+import "./subpath";
 import { increase, x } from "./subpath/common";
 
 increase();
