@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "release": "yarn build && npm publish --access=public"
+    "release": "yarn build && yarn publish --access public"
   },
   "dependencies": {
     "@types/node": "^10.1.4",
