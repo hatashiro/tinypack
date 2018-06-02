@@ -39,8 +39,8 @@ tinypack path/to/entry.ts
 ### Play with [examples](examples)
 
 ```shell
-tinypack examples/01-simple/index.ts # stdout
-tinypack examples/01-simple/index.ts | node # run
+tinypack examples/01-simple # stdout
+tinypack examples/01-simple | node # run
 ```
 
 ## How does it work?
