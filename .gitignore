@@ -68,3 +68,6 @@ typings/
 
 # Built files
 dist
+
+# VS Code
+.vscode
