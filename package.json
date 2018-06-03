@@ -22,5 +22,8 @@
   "dependencies": {
     "@types/node": "^10.1.4",
     "typescript": "^2.9.1"
+  },
+  "devDependencies": {
+    "date-fns": "^1.29.0"
   }
 }
