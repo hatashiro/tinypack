@@ -9,7 +9,7 @@ A simple TypeScript module bundler, inspired by [minipack](https://github.com/ro
 - [x] Bundle TypeScript modules (only ECMAScript Modules)
 - [x] Remove duplication for the same module
 - [x] Resolve circular dependency
-- [ ] `node_modules` resolution
+- [x] `node_modules` resolution
 
 ## Install
 
