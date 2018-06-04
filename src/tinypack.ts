@@ -17,7 +17,8 @@ if (!input) error("No input is provided.");
 
 let isFile = (path: string) => exists(path) && stat(path).isFile();
 let isDir = (path: string) => exists(path) && stat(path).isDirectory();
-function modulePath(path: string, from?: string): string {
+
+function localModulePath(path: string, from?: string): string {
   let absPath = from ? resolve(dirname(from), path) : resolve(path);
   let tsPath = absPath.endsWith(".ts") ? absPath : absPath + ".ts";
   let indexPath = resolve(absPath, "index.ts");
@@ -26,7 +27,37 @@ function modulePath(path: string, from?: string): string {
          error(`Cannot find module '${path}'.`);
 }
 
-let entryFile = modulePath(input);
+function npmModulePath(pkg: string, from: string): string {
+  let projRoot = dirname(from);
+  while (!isDir(resolve(projRoot, "node_modules"))) {
+    projRoot = dirname(projRoot);
+  }
+
+  let pkgRoot = resolve(projRoot, "node_modules", pkg);
+
+  let jsPath = pkgRoot + ".js";
+  if (isFile(jsPath)) {
+    return jsPath;
+  }
+
+  let packageJSONPath = resolve(pkgRoot, "package.json");
+  if (isFile(packageJSONPath)) {
+    let main: string = require(packageJSONPath).module ||
+                       require(packageJSONPath).main;
+    if (main) {
+      return resolve(pkgRoot, main);
+    }
+  }
+
+  let indexPath = resolve(pkgRoot, "index.js");
+  if (isFile(indexPath)) {
+    return indexPath;
+  }
+
+  return error(`Cannot find module '${pkg}'.`);
+}
+
+let entryFile = localModulePath(input);
 
 /*
  * STEP 1: Type check
@@ -74,16 +105,19 @@ function compile(file: string): Module {
       let moduleSpecifier = importDecl.moduleSpecifier.getText(source);
       let dep = JSON.parse(moduleSpecifier) as string;
 
+      let depPath: string;
       if (dep.startsWith(".")) {
-        let depPath = modulePath(dep, file);
-        let depID = fileModuleIdMap.get(depPath);
-        if (depID === undefined) {
-          depID = ++moduleID;
-          fileModuleIdMap.set(depPath, depID);
-          files.push(depPath);
-        }
-        deps.set(dep, depID);
+        depPath = localModulePath(dep, file);
+      } else {
+        depPath = npmModulePath(dep, file);
       }
+      let depID = fileModuleIdMap.get(depPath);
+      if (depID === undefined) {
+        depID = ++moduleID;
+        fileModuleIdMap.set(depPath, depID);
+        files.push(depPath);
+      }
+      deps.set(dep, depID);
     }
   });
 
