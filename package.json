@@ -1,6 +1,6 @@
 {
   "name": "@utatti/tinypack",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A simple TypeScript module bundler",
   "repository": "git@github.com:utatti/tinypack.git",
   "author": "Hyunje Jun <me@noraesae.net>",
