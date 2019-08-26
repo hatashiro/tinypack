@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "A simple TypeScript module bundler",
   "repository": "git@github.com:utatti/tinypack.git",
-  "author": "Hyunje Jun <me@noraesae.net>",
+  "author": "Jun <noraesae+dev@gmail.com>",
   "license": "MIT",
   "main": "dist/tinypack.js",
   "bin": {
